@@ -1,0 +1,14 @@
+{
+  "entity.playerinvasion.invader": "Player",
+  "command.playerinvasion.not_running": "The invasion manager is not running.",
+  "command.playerinvasion.spawned": "Someone is joining...",
+  "command.playerinvasion.spawn_failed": "Nobody could join: no valid player nearby, the roster is full, or that name is busy/dead.",
+  "command.playerinvasion.online": "Fake players online: %s",
+  "command.playerinvasion.roster": "Offline (may return): %s, dead for good: %s",
+  "command.playerinvasion.kicked": "%s is leaving.",
+  "command.playerinvasion.no_such_bot": "No fake player called %s.",
+  "command.playerinvasion.tier_set": "%s is now %s tier.",
+  "command.playerinvasion.chance": "Join chance per roll: %s%% (advancements earned: %s, online/pending: %s)",
+  "command.playerinvasion.advancements_set": "Advancement counter set to %s.",
+  "command.playerinvasion.reset": "Invasion state wiped: everyone kicked, roster and counters cleared."
+}

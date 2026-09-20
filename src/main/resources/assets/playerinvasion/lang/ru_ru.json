@@ -1,0 +1,14 @@
+{
+  "entity.playerinvasion.invader": "Игрок",
+  "command.playerinvasion.not_running": "Менеджер вторжения не запущен.",
+  "command.playerinvasion.spawned": "Кто-то заходит...",
+  "command.playerinvasion.spawn_failed": "Никто не смог зайти: рядом нет подходящего игрока, список полон или это имя занято/мертво.",
+  "command.playerinvasion.online": "Фейковых игроков онлайн: %s",
+  "command.playerinvasion.roster": "Оффлайн (могут вернуться): %s, мертвы навсегда: %s",
+  "command.playerinvasion.kicked": "%s выходит.",
+  "command.playerinvasion.no_such_bot": "Нет фейкового игрока с именем %s.",
+  "command.playerinvasion.tier_set": "%s теперь на уровне %s.",
+  "command.playerinvasion.chance": "Шанс захода за проверку: %s%% (получено достижений: %s, онлайн/ожидают: %s)",
+  "command.playerinvasion.advancements_set": "Счётчик достижений установлен на %s.",
+  "command.playerinvasion.reset": "Состояние вторжения сброшено: все выгнаны, список и счётчики очищены."
+}
