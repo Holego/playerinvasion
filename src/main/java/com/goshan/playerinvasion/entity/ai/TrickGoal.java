@@ -2,95 +2,66 @@ package com.goshan.playerinvasion.entity.ai;
 
 import com.goshan.playerinvasion.entity.InvaderEntity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.goal.Goal;
-import net.minecraft.world.entity.player.Player;
-
-import java.util.EnumSet;
 
 /**
- * Base for the short scripted combat tricks (lava, cobweb, crystal, anchor).
- * A trick is a handful of ticks long, runs alongside the movement goals (no MOVE
- * flag) and has its own cooldown so the bot does not spam it.
+ * Base for the short scripted combat tricks (lava, cobweb, crystal, anchor,
+ * pearl, splash potion). This is a plain object, not a {@code Goal} - it is
+ * driven by {@link CombatTricksGoal}, which owns the bot's one "ranged trick"
+ * turn and picks fairly among whichever tricks are off cooldown and
+ * geometrically possible right now. Six separate same-priority {@code Goal}s
+ * would let whichever one happens to be checked first (and recharges fastest,
+ * like the crystal) win every single time and starve the rest - that was the
+ * original bug: lava, cobwebs, pearls and potions almost never fired.
  */
-public abstract class TrickGoal extends Goal {
+public abstract class TrickGoal {
 
     protected final InvaderEntity bot;
-    protected int phase;
+    protected int phase = -1;
     protected int timer;
     protected int cooldown;
     protected LivingEntity target;
 
     protected TrickGoal(InvaderEntity bot) {
         this.bot = bot;
-        this.setFlags(EnumSet.of(Flag.LOOK));
     }
 
-    protected static boolean validTarget(LivingEntity target) {
-        if (target == null || !target.isAlive()) {
-            return false;
-        }
-        return !(target instanceof Player p && (p.isCreative() || p.isSpectator()));
-    }
-
-    /** Preconditions besides the generic ones (cooldown, target, not eating). */
+    /** Whether this trick could be attempted right now (resources, range, geometry). Cooldown is handled by the caller. */
     protected abstract boolean ready(LivingEntity target);
 
-    /** Called once per tick while the trick runs; return false when done. */
+    /** Called once per tick while the trick runs; return false when it is done or gives up. */
     protected abstract boolean step();
 
     protected abstract int cooldownTicks();
 
-    @Override
-    public boolean canUse() {
+    /** Ticks the cooldown down; returns true once it has reached zero (i.e. this trick may be polled this tick). */
+    boolean tickCooldown() {
         if (cooldown > 0) {
             cooldown--;
             return false;
         }
-        LivingEntity t = bot.getTarget();
-        if (!validTarget(t) || bot.isEating() || bot.isFallFlying()) {
-            return false;
-        }
-        if (!bot.getSensing().hasLineOfSight(t)) {
-            return false;
-        }
-        return ready(t);
-    }
-
-    @Override
-    public boolean canContinueToUse() {
-        return phase >= 0 && validTarget(target);
-    }
-
-    @Override
-    public boolean requiresUpdateEveryTick() {
         return true;
     }
 
-    @Override
-    public void start() {
-        target = bot.getTarget();
-        phase = 0;
-        timer = 0;
+    boolean isActive() {
+        return phase >= 0;
     }
 
-    @Override
-    public void tick() {
-        if (phase < 0) {
-            return;
-        }
+    void begin(LivingEntity currentTarget) {
+        this.target = currentTarget;
+        this.phase = 0;
+        this.timer = 0;
+    }
+
+    void runTick() {
         if (!step()) {
             phase = -1;
         }
         timer++;
     }
 
-    @Override
-    public void stop() {
+    void stop() {
         phase = -1;
         cooldown = cooldownTicks();
         target = null;
-        if (!bot.isEating()) {
-            bot.equipBestWeapon();
-        }
     }
 }

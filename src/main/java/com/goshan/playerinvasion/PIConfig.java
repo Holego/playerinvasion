@@ -38,6 +38,7 @@ public final class PIConfig {
     public static final ForgeConfigSpec.IntValue HUNT_RADIUS;
     public static final ForgeConfigSpec.IntValue RELOCATE_DISTANCE;
     public static final ForgeConfigSpec.IntValue RELOCATE_AFTER_SECONDS;
+    public static final ForgeConfigSpec.BooleanValue USE_POTIONS;
     public static final ForgeConfigSpec.BooleanValue USE_LAVA;
     public static final ForgeConfigSpec.BooleanValue USE_COBWEBS;
     public static final ForgeConfigSpec.BooleanValue USE_GOLDEN_APPLES;
@@ -133,8 +134,8 @@ public final class PIConfig {
         b.pop();
 
         b.comment("How the fake players gear up over time").push("progression");
-        START_TIER = b.comment("Gear tier a brand-new fake player starts with. 0 = wooden axe, 1 = iron + shield + lava + cobwebs,",
-                        "2 = diamond + golden apples + bow, 3 = netherite + totems + elytra + end crystals + respawn anchors + ender pearls.")
+        START_TIER = b.comment("Gear tier a brand-new fake player starts with. 0 = wooden axe, 1 = iron + shield + splash potions,",
+                        "2 = diamond + golden apples + bow + lava + cobwebs, 3 = netherite + totems + elytra + end crystals + respawn anchors + ender pearls.")
                 .defineInRange("startTier", 0, 0, 3);
         MAX_TIER = b.comment("Highest tier a fake player can reach.").defineInRange("maxTier", 3, 0, 3);
         TIER_UP_MINUTES = b.comment("Minutes of existence (online or offline) needed to reach the next tier. The longer a fake player lives, the stronger it gets.")
@@ -157,6 +158,8 @@ public final class PIConfig {
         RELOCATE_DISTANCE = b.comment("If no real player is within this distance (blocks) for relocateAfterSeconds, the fake player quietly moves next to someone.")
                 .defineInRange("relocateDistance", 96, 32, 1024);
         RELOCATE_AFTER_SECONDS = b.defineInRange("relocateAfterSeconds", 45, 5, 3600);
+        USE_POTIONS = b.comment("Iron-tier bots throw splash potions (Harming, Poison, Slowness, Weakness), picked the same way a witch picks one.")
+                .define("useSplashPotions", true);
         USE_LAVA = b.define("useLava", true);
         USE_COBWEBS = b.define("useCobwebs", true);
         USE_GOLDEN_APPLES = b.define("useGoldenApples", true);

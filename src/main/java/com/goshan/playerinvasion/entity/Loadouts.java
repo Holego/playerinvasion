@@ -6,14 +6,19 @@ import net.minecraft.world.item.FireworkRocketItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 
 /**
  * The four "stages of development" of a fake player. Tier 0 is a fresh spawn with
- * a wooden axe; tier 3 is a full netherite crystal-PvP kit. Everything a bot owns
- * comes from here (or from what it picked up), so what drops on death is exactly
- * what a real player at that stage would have carried.
+ * a wooden axe; tier 3 is a full netherite crystal-PvP kit. Iron carries splash
+ * potions (a witch-style ranged trick, no lava/cobwebs yet); those start at
+ * diamond, once the bot can actually afford to lose the resources. Everything a
+ * bot owns comes from here (or from what it picked up), so what drops on death
+ * is exactly what a real player at that stage would have carried.
  */
 public final class Loadouts {
 
@@ -57,9 +62,10 @@ public final class Loadouts {
                 armor(bot, Items.IRON_HELMET, Items.IRON_CHESTPLATE, Items.IRON_LEGGINGS, Items.IRON_BOOTS, null, 0);
                 inv.add(new ItemStack(Items.IRON_AXE));
                 inv.add(new ItemStack(Items.IRON_PICKAXE));
-                inv.add(new ItemStack(Items.LAVA_BUCKET));
-                inv.add(new ItemStack(Items.LAVA_BUCKET));
-                inv.add(new ItemStack(Items.COBWEB, 8));
+                inv.add(splash(Potions.HARMING, 2));
+                inv.add(splash(Potions.POISON, 2));
+                inv.add(splash(Potions.SLOWNESS, 2));
+                inv.add(splash(Potions.WEAKNESS, 2));
                 inv.add(new ItemStack(Items.COBBLESTONE, 64));
             }
             case DIAMOND -> {
@@ -112,6 +118,10 @@ public final class Loadouts {
         ItemStack stack = new ItemStack(Items.FIREWORK_ROCKET, count);
         FireworkRocketItem.setDuration(stack, (byte) 3);
         return stack;
+    }
+
+    private static ItemStack splash(Potion potion, int count) {
+        return PotionUtils.setPotion(new ItemStack(Items.SPLASH_POTION, count), potion);
     }
 
     private static void armor(InvaderEntity bot, Item head, Item chest, Item legs, Item feet, Enchantment enchant, int level) {

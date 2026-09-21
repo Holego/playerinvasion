@@ -33,8 +33,8 @@ Every person is a record in the world's saved data (`data/playerinvasion.dat`). 
 | Tier | Kit |
 |---|---|
 | 0 wood | wooden axe, wooden pickaxe, 16 dirt |
-| 1 iron | iron sword + axe + pickaxe, full iron armor, **shield**, 2 lava buckets, 8 cobwebs, 64 cobblestone |
-| 2 diamond | diamond sword (Sharpness II) + axe + pickaxe (Efficiency II), full diamond armor (Protection II), shield, **bow** (Power II) + 32 arrows, **8 golden apples**, lava, 16 cobwebs, cobblestone |
+| 1 iron | iron sword + axe + pickaxe, full iron armor, **shield**, **8 splash potions** (Harming/Poison/Slowness/Weakness), 64 cobblestone |
+| 2 diamond | diamond sword (Sharpness II) + axe + pickaxe (Efficiency II), full diamond armor (Protection II), shield, **bow** (Power II) + 32 arrows, **8 golden apples**, **2 lava buckets + 16 cobwebs**, cobblestone |
 | 3 netherite | netherite sword (Sharpness IV) + axe + pickaxe (Efficiency IV), full netherite armor (Protection IV), **totem of undying** in the off hand + 2 spare, **elytra (Unbreaking III) + 32 firework rockets**, bow (Power IV) + 64 arrows, 16 golden + 2 enchanted golden apples, **16 end crystals + 32 obsidian**, **4 respawn anchors + 16 glowstone**, 4 beds, **16 ender pearls**, lava, cobwebs, cobblestone |
 
 Enchantments can be turned off with `enchantedGear = false`.
@@ -45,10 +45,13 @@ A bot that has not seen anyone for `giveUpMinutes` says something like "going mi
 
 The bot is a pathfinding mob with a player's numbers: 20 hp, 3-block reach, walking and sprinting speed of a player, attack cooldown taken from the weapon's attack speed, full-cooldown hits only.
 
+Crystals, anchors/beds, lava, cobwebs, pearls and potions are all "tricks" a bot can only do one of at a time. Whichever of them are actually possible right now (right gear, right range, right geometry, health above 45%) go into a pool and one is picked at random each time — so a netherite bot that could equally throw a crystal or drop lava does not always reach for the same one, and a bot below 45% health backs off to eat instead of starting a trick it might not finish.
+
 * **Melee** — sprints in, strafes around you, hits on cooldown, jumps for the occasional crit (sprint off, on the way down, ×1.5, crit particles), W-taps for knockback. Swaps sword → axe when you raise a shield, so the shield gets disabled; swaps back afterwards.
 * **Shield** — raised when you face it and its own attack is cooling down, and against incoming arrows. An axe hit disables it for 5 seconds like a player's. The shield takes durability and can break.
-* **Lava** — a bucket dumped under your feet from 2.5–6 blocks, then it keeps its distance.
-* **Cobwebs** — placed on your feet so you cannot run.
+* **Splash potions** (iron) — Harming, Poison, Slowness or Weakness, picked the same way a witch picks one: Slowness at range to stop you closing in, Poison against a healthy target, Weakness up close, Harming otherwise.
+* **Lava** (diamond+) — a bucket dumped under your feet from 2.5–6 blocks, then it keeps its distance.
+* **Cobwebs** (diamond+) — placed on your feet so you cannot run.
 * **Bow** — from 12+ blocks, drawn for a full second, shot with a bit of lead; strafes like a skeleton; switches back to the sword under 5 blocks.
 * **Golden apples** — under 45% health it backs off and eats; the enchanted one when it is really bad.
 * **End crystals** — obsidian next to you, crystal on top, hit. Keeps ≥ 4 blocks away from its own crystal and eats the splash like anyone else. Death message: `was blown up by X`.
@@ -100,7 +103,7 @@ A bot created with `/summon playerinvasion:invader` is adopted: it gets a name, 
 
 ## Configuration
 
-`config/playerinvasion-common.toml`, sections `spawning`, `progression`, `behaviour`, `presentation`, `phrases`. Every trick has its own switch (`useLava`, `useCobwebs`, `useGoldenApples`, `useBow`, `useEndCrystals`, `useRespawnAnchors`, `useEnderPearls`, `useElytra`, `digThroughBlocks`, `placeBlocks`, `pickUpLoot`, `explosionsBreakBlocks`, `monstersAttackBots`). `onlineSkins = false` makes every bot a Steve/Alex without touching the network. `names`, `skinDonors` and all `phrases.*` lists are plain string arrays.
+`config/playerinvasion-common.toml`, sections `spawning`, `progression`, `behaviour`, `presentation`, `phrases`. Every trick has its own switch (`useSplashPotions`, `useLava`, `useCobwebs`, `useGoldenApples`, `useBow`, `useEndCrystals`, `useRespawnAnchors`, `useEnderPearls`, `useElytra`, `digThroughBlocks`, `placeBlocks`, `pickUpLoot`, `explosionsBreakBlocks`, `monstersAttackBots`). `onlineSkins = false` makes every bot a Steve/Alex without touching the network. `names`, `skinDonors` and all `phrases.*` lists are plain string arrays.
 
 ---
 
@@ -136,4 +139,6 @@ Built and run as a dev client (integrated server) and as a dedicated Forge 47.4.
 * chat lines fire on join, spot, kill, low health and idle; bots answer a greeting typed by the player;
 * a person from a previous session came back as `(tier 3, returning)` with its tier intact — the saved data round-trips;
 * elytra: `takes off on elytra towards Dev (37 blocks away)` -> `drops on Dev after 23 ticks of flight` -> `Dev was blown up`; towering: `towers up (12 blocks to climb)`; digging down to a player underground: `starts digging towards the target (dy -6)` -> `broke Grass Block`, `broke Dirt`; all at DEBUG level in the dev log;
-* no exceptions from the mod in any run.
+* the fair-turn trick picker was confirmed live: `MishaGamer picks PlaceCobwebGoal out of 2 ready tricks` — before this, crystals/anchors (short cooldown) always won the shared slot and lava/cobwebs/pearls/potions never got a turn; every trick's own health >= 9 gate and 1-tick wind-up (down from 2-3) were added after a live session showed a bot picking up a lava bucket/cobweb and then never using it - the eat-golden-apple goal (higher priority) was interrupting it mid-attempt;
+* no exceptions from the mod in any run;
+* **not independently re-confirmed after the health-gate/wind-up fix**: a full lava-poured/cobweb-placed log line, because the local dev harness's background game processes stopped producing output mid-session (unrelated to the mod - confirmed via `Get-Process` that the JVMs were still consuming CPU) across every launch method tried (integrated client, dedicated server, isolated working directory). The fix is mechanically direct (same pattern already proven for crystals/anchors, which have always had this health gate) and the code compiles and starts cleanly; treat the completion of low-tier tricks as reasoned-through rather than freshly log-verified, and report back if `useSplashPotions`/`useLava`/`useCobwebs` still misbehave.

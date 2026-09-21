@@ -1,6 +1,7 @@
 package com.goshan.playerinvasion.entity.ai;
 
 import com.goshan.playerinvasion.PIConfig;
+import com.goshan.playerinvasion.PlayerInvasion;
 import com.goshan.playerinvasion.entity.InvaderEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
@@ -22,6 +23,11 @@ public class PlaceCobwebGoal extends TrickGoal {
         if (!PIConfig.loaded() || !PIConfig.USE_COBWEBS.get() || !bot.getInventory().has(Items.COBWEB)) {
             return false;
         }
+        // same reasoning as the lava trick: don't start a trap that the (higher-priority) eat-apple
+        // goal would then interrupt half-done, leaving the bot holding an unused cobweb
+        if (bot.getHealth() < 9.0F) {
+            return false;
+        }
         double dist = bot.distanceTo(target);
         if (dist < 1.2D || dist > 4.5D || target.isInWater()) {
             return false;
@@ -41,6 +47,7 @@ public class PlaceCobwebGoal extends TrickGoal {
     protected boolean step() {
         if (phase == 0) {
             if (!bot.holdFromInventory(s -> s.is(Items.COBWEB))) {
+                PlayerInvasion.LOGGER.debug("{} cobweb: could not hold a cobweb (has={})", bot.getBotName(), bot.getInventory().has(Items.COBWEB));
                 return false;
             }
             Vec3 c = Vec3.atCenterOf(spot);
@@ -48,11 +55,14 @@ public class PlaceCobwebGoal extends TrickGoal {
             phase = 1;
             return true;
         }
-        if (phase == 1 && timer >= 2) {
+        if (phase == 1 && timer >= 1) {
             if (!bot.level().getBlockState(spot).isAir()) {
+                PlayerInvasion.LOGGER.debug("{} cobweb: spot {} no longer air ({})", bot.getBotName(), spot.toShortString(),
+                        bot.level().getBlockState(spot).getBlock().getName().getString());
                 return false;
             }
             Placing.place(bot, spot, Blocks.COBWEB.defaultBlockState(), Items.COBWEB, null);
+            PlayerInvasion.LOGGER.debug("{} traps the target in a cobweb at {}", bot.getBotName(), spot.toShortString());
             phase = 2;
             return true;
         }

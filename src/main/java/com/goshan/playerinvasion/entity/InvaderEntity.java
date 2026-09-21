@@ -1,17 +1,13 @@
 package com.goshan.playerinvasion.entity;
 
 import com.goshan.playerinvasion.PIConfig;
-import com.goshan.playerinvasion.entity.ai.AnchorAttackGoal;
-import com.goshan.playerinvasion.entity.ai.CrystalAttackGoal;
+import com.goshan.playerinvasion.entity.ai.CombatTricksGoal;
 import com.goshan.playerinvasion.entity.ai.EatGoldenAppleGoal;
 import com.goshan.playerinvasion.entity.ai.ElytraChaseGoal;
 import com.goshan.playerinvasion.entity.ai.HuntGoal;
 import com.goshan.playerinvasion.entity.ai.InvaderBowGoal;
 import com.goshan.playerinvasion.entity.ai.InvaderMeleeGoal;
 import com.goshan.playerinvasion.entity.ai.ObstacleSolver;
-import com.goshan.playerinvasion.entity.ai.PearlGoal;
-import com.goshan.playerinvasion.entity.ai.PlaceCobwebGoal;
-import com.goshan.playerinvasion.entity.ai.PlaceLavaGoal;
 import com.goshan.playerinvasion.invasion.BotChat;
 import com.goshan.playerinvasion.invasion.InvasionManager;
 import com.mojang.authlib.GameProfile;
@@ -175,11 +171,7 @@ public class InvaderEntity extends PathfinderMob {
         this.goalSelector.addGoal(0, new FloatGoal(this));
         this.goalSelector.addGoal(1, new EatGoldenAppleGoal(this));
         this.goalSelector.addGoal(2, new ElytraChaseGoal(this));
-        this.goalSelector.addGoal(3, new CrystalAttackGoal(this));
-        this.goalSelector.addGoal(3, new AnchorAttackGoal(this));
-        this.goalSelector.addGoal(3, new PlaceLavaGoal(this));
-        this.goalSelector.addGoal(3, new PlaceCobwebGoal(this));
-        this.goalSelector.addGoal(3, new PearlGoal(this));
+        this.goalSelector.addGoal(3, new CombatTricksGoal(this));
         this.goalSelector.addGoal(4, new InvaderBowGoal(this));
         this.goalSelector.addGoal(5, new InvaderMeleeGoal(this));
         this.goalSelector.addGoal(6, new OpenDoorGoal(this, true));

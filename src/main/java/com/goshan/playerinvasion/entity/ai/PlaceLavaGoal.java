@@ -1,6 +1,7 @@
 package com.goshan.playerinvasion.entity.ai;
 
 import com.goshan.playerinvasion.PIConfig;
+import com.goshan.playerinvasion.PlayerInvasion;
 import com.goshan.playerinvasion.entity.InvaderEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
@@ -28,7 +29,9 @@ public class PlaceLavaGoal extends TrickGoal {
         if (!PIConfig.loaded() || !PIConfig.USE_LAVA.get() || !bot.getInventory().has(Items.LAVA_BUCKET)) {
             return false;
         }
-        if (!bot.onGround() || target.isInWater() || bot.isInWater()) {
+        // low health: back off and eat instead of finishing a trap - and don't let the eat goal
+        // (which outranks this one) catch the bot mid-pour with an empty bucket in hand
+        if (!bot.onGround() || bot.getHealth() < 9.0F || target.isInWater() || bot.isInWater()) {
             return false;
         }
         double dist = bot.distanceTo(target);
@@ -65,6 +68,7 @@ public class PlaceLavaGoal extends TrickGoal {
         }
         if (phase == 0) {
             if (!bot.holdFromInventory(s -> s.is(Items.LAVA_BUCKET))) {
+                PlayerInvasion.LOGGER.debug("{} lava: could not hold a lava bucket (has={})", bot.getBotName(), bot.getInventory().has(Items.LAVA_BUCKET));
                 return false;
             }
             Vec3 c = Vec3.atCenterOf(spot);
@@ -72,12 +76,15 @@ public class PlaceLavaGoal extends TrickGoal {
             phase = 1;
             return true;
         }
-        if (phase == 1 && timer >= 3) {
+        if (phase == 1 && timer >= 1) {
             if (!Placing.isFree(bot.level(), spot) || !bot.getMainHandItem().is(Items.LAVA_BUCKET)) {
+                PlayerInvasion.LOGGER.debug("{} lava: spot {} free={} holding={}", bot.getBotName(), spot.toShortString(),
+                        Placing.isFree(bot.level(), spot), bot.getMainHandItem());
                 return false;
             }
             bot.level().setBlock(spot, Blocks.LAVA.defaultBlockState(), 11);
             bot.swingAndPlaySound(SoundEvents.BUCKET_EMPTY_LAVA);
+            PlayerInvasion.LOGGER.debug("{} pours lava at {}", bot.getBotName(), spot.toShortString());
             bot.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(Items.BUCKET));
             phase = 2;
             return true;
